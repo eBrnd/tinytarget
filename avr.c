@@ -20,7 +20,7 @@ void setup_pinchange() {
 // IO ROUTINES
 void flash() {
   PORTB |= (1 << PB3) | (1 << PB4);
-  _delay_ms(2);
+  _delay_ms(1);
   PORTB &= ~((1 << PB3) | (1 << PB4));
 }
 
