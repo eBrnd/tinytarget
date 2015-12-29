@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -27,11 +28,16 @@ void toggle_led() {
   if (c == 0)
     PORTB |= (1 << PB3);
   else if (c == 1)
-    PORTB &= ~((1 << PB4) | (1 << PB3));
-  else if (c == 44)
+    PORTB &= ~(1 << PB3);
+}
+
+void led_antenna() {
+  const bool val = PINB & (1 << PB0);
+
+  if (val)
     PORTB |= (1 << PB4);
-  else if (c == 45)
-    PORTB &= ~((1 << PB4) | (1 << PB3));
+  else
+    PORTB &= ~(1 << PB4);
 }
 
 // INTERRUPT ROUTINES
@@ -50,7 +56,8 @@ int main() {
   save_power();
 
   while (1)
-    asm volatile("nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+    // asm volatile("nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+    led_antenna();
 
   return 0;
 }
