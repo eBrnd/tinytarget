@@ -9,14 +9,7 @@
 // SETUP ROUTINES
 void setup_port() {
   PORTB = 0x00;
-
   DDRB = (1 << PB3) | (1 << PB4);
-}
-
-void setup_timer() {
-  TCCR0A |= (1 << COM0A0);
-  TCCR0B = (1 << CS02);
-  TIMSK |= (1 << OCIE0A); // Timer overflow interrupt enable - Note: also can do output compare match.
 }
 
 void setup_pinchange() {
@@ -26,27 +19,16 @@ void setup_pinchange() {
 
 // IO ROUTINES
 void flash() {
-  static char state = 0;
-
-  /*if (state++ % 2)
-    PORTB |= (1 << PB3);
-  else
-    PORTB |= (1 << PB4);*/
-
   PORTB |= (1 << PB3) | (1 << PB4);
   _delay_ms(2);
   PORTB &= ~((1 << PB3) | (1 << PB4));
 }
 
 volatile bool fast = false;
-
-void toggle_led() {
+void timer_expired() {
   static unsigned c = 0;
 
-  if (fast)
-    c += 23;
-  else
-    c++;
+  c += fast ? 23 : 1;
 
   if (c >= 2 * 42) {
     flash();
@@ -55,27 +37,15 @@ void toggle_led() {
 }
 
 // INTERRUPT ROUTINES
-ISR(TIM0_COMPA_vect) {
-  // toggle_led();
-}
-
 ISR(WDT_vect) {
-  toggle_led();
+  timer_expired();
 }
 
 ISR(PCINT0_vect) {
-  const bool antenna = PINB & (1 << PB0);
-
-  if (antenna) {
-    // TCCR0B = (1 << CS01);
-    fast = true;
-  } else {
-    // TCCR0B = (1 << CS02);
-    fast = false;
-  }
+  fast = PINB & (1 << PB0);
 }
 
-void save_power_ready() {
+void save_power_prepare() {
   PRR |= 11; // PRTIM1 + PRUSI + PRADC
   WDTCR |= (1 << WDIE);
   WDTCR &= ~((1 << WDP0) | (1 << WDP1) | (1 << WDP2) | (1 << WDP3));
@@ -89,9 +59,8 @@ void save_power_do() {
 // MAIN PROGRAM
 int main() {
   setup_port();
-  // setup_timer();
   setup_pinchange();
-  save_power_ready();
+  save_power_prepare();
   sei();
 
   while (1)
