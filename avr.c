@@ -28,13 +28,13 @@ void setup_pinchange() {
 void flash() {
   static char state = 0;
 
-  if (state++ % 2)
+  /*if (state++ % 2)
     PORTB |= (1 << PB3);
   else
-    PORTB |= (1 << PB4);
+    PORTB |= (1 << PB4);*/
 
+  PORTB |= (1 << PB3) | (1 << PB4);
   _delay_ms(2);
-
   PORTB &= ~((1 << PB3) | (1 << PB4));
 }
 
